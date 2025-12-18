@@ -1,8 +1,4 @@
-﻿
-using System;
-using System.IO;
-using System.Linq;
-using Tesseract;
+﻿using Tesseract;
 
 namespace OcrFolderToTxt
 {
@@ -10,17 +6,17 @@ namespace OcrFolderToTxt
     {
         static int Main(string[] args)
         {
-            // 引数: [0] 対象フォルダ, [1] tessdata のパス, [2] 言語 (例: "jpn+eng")
-            if (args.Length < 3)
+            // 引数: [0] 画像フォルダ [1] 言語指定)
+            if (args.Length < 2)
             {
-                Console.WriteLine("使い方: OcrFolderToTxt <画像フォルダ> <tessdataフォルダ> <言語>");
-                Console.WriteLine(@"例:    OcrFolderToTxt ""C:\Images"" ""C:\tessdata"" ""jpn+eng""");
+                Console.WriteLine("使い方: OcrFolderToTxt <画像フォルダ> <言語>");
+                Console.WriteLine(@"例:    OcrFolderToTxt ""C:\Images"" ""jpn+eng""");
                 return 1;
             }
 
             var imageDir = args[0];
-            var tessdataPath = args[1];
-            var lang = args[2];
+            var lang = args[1];
+            var tessdataPath = @".\";
 
             if (!Directory.Exists(imageDir))
             {
@@ -55,11 +51,10 @@ namespace OcrFolderToTxt
                 using var engine = new TesseractEngine(tessdataPath, lang, EngineMode.Default);
 
                 int success = 0, fail = 0;
+                var allText = ""; // まとめて書き出す用
+
                 foreach (var imgPath in imageFiles)
                 {
-                    var txtPath = Path.Combine(Path.GetDirectoryName(imgPath)!, "txt",
-                                               Path.GetFileNameWithoutExtension(imgPath) + ".txt");
-
                     try
                     {
                         using var pix = Pix.LoadFromFile(imgPath);
@@ -67,11 +62,11 @@ namespace OcrFolderToTxt
 
                         var text = page.GetText() ?? string.Empty;
 
-                        // 改行や空白の整形（必要に応じて）
-                        // text = NormalizeText(text);
+                        // ファイル名で区切る
+                        allText += $"----- {Path.GetFileName(imgPath)} -----{Environment.NewLine}";
+                        allText += text + Environment.NewLine;
 
-                        File.WriteAllText(txtPath, text);
-                        Console.WriteLine($"[OK] {Path.GetFileName(imgPath)} -> {Path.GetFileName(txtPath)}");
+                        Console.WriteLine($"[OK] {Path.GetFileName(imgPath)}");
                         success++;
                     }
                     catch (Exception ex)
@@ -81,7 +76,12 @@ namespace OcrFolderToTxt
                     }
                 }
 
+                // まとめて1ファイルに出力
+                var outputPath = Path.Combine(imageDir, "all_ocr_result.txt");
+                File.WriteAllText(outputPath, allText);
+
                 Console.WriteLine($"[DONE] 成功: {success}, 失敗: {fail}");
+                Console.WriteLine($"[INFO] 出力ファイル: {outputPath}");
             }
             catch (Exception ex)
             {
@@ -97,12 +97,5 @@ namespace OcrFolderToTxt
             var ext = Path.GetExtension(path)?.ToLowerInvariant();
             return ext == ".jpg" || ext == ".jpeg";
         }
-
-        // 必要なら出力整形を行う
-        // static string NormalizeText(string input)
-        // {
-        //     // 連続空白の削除、CRLF統一など
-        //     return input.Replace("\r\n", "\n").Trim();
-        // }
     }
 }
