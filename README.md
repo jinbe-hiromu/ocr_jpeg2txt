@@ -26,10 +26,6 @@ ocr_jpeg2txt.exe "<画像フォルダ>" "<言語>"
 
 - `<画像フォルダ>` : OCR 対象の画像フォルダ
 - `<言語>` : 使用する言語（例: `jpn+eng`）
-
-#### 例
-```
-ocr_jpeg2txt.exe "C:\Images" "jpn+eng"
 ```
 
 ### 出力
