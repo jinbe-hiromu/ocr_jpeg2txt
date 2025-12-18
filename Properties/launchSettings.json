@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "ocr_jpeg2txt": {
-      "commandName": "Project",
-      "commandLineArgs": "\"C:\\Users\\10087901254\\Desktop\\C++\\jpeg\" \"C:\\Github\\tesseract-ocr\\tessdata\" \"jpn+eng\""
-    }
-  }
-}
